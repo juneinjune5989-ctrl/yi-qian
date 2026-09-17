@@ -8,8 +8,10 @@ const STICK_COUNT = 11;
 
 export default function DrawBox({ onDraw }: DrawBoxProps) {
   const [shaking, setShaking] = useState(false);
+  const [settling, setSettling] = useState(false);
   const [drawing, setDrawing] = useState(false);
   const holdTimer = useRef<number | null>(null);
+  const settleTimer = useRef<number | null>(null);
   const didShake = useRef(false);
 
   const clearTimer = () => {
@@ -19,11 +21,19 @@ export default function DrawBox({ onDraw }: DrawBoxProps) {
     }
   };
 
+  const stopShaking = () => {
+    setShaking(false);
+    setSettling(true);
+    if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+    settleTimer.current = window.setTimeout(() => setSettling(false), 500);
+  };
+
   const startPress = () => {
     if (drawing) return;
     didShake.current = false;
     holdTimer.current = window.setTimeout(() => {
       didShake.current = true;
+      setSettling(false);
       setShaking(true);
     }, 220);
   };
@@ -32,7 +42,7 @@ export default function DrawBox({ onDraw }: DrawBoxProps) {
     if (drawing) return;
     clearTimer();
     if (didShake.current) {
-      setShaking(false);
+      stopShaking();
     } else {
       triggerDraw();
     }
@@ -40,11 +50,12 @@ export default function DrawBox({ onDraw }: DrawBoxProps) {
 
   const cancelPress = () => {
     clearTimer();
-    setShaking(false);
+    if (shaking) stopShaking();
   };
 
   const triggerDraw = () => {
     setShaking(false);
+    setSettling(false);
     setDrawing(true);
     window.setTimeout(() => onDraw(), 1150);
   };
@@ -63,7 +74,7 @@ export default function DrawBox({ onDraw }: DrawBoxProps) {
         role="button"
         aria-label="抽签盒：长按摇签，轻点抽签"
       >
-        <div className={shaking ? 'shake-box h-full w-full' : 'h-full w-full'}>
+        <div className={shaking ? 'shake-box h-full w-full' : settling ? 'settle-box h-full w-full' : 'h-full w-full'}>
           {/* 签筒内探出的签枝 */}
           <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2" style={{ width: 150, height: 130 }}>
             {sticks.map((_, i) => {
@@ -72,7 +83,7 @@ export default function DrawBox({ onDraw }: DrawBoxProps) {
               return (
                 <div
                   key={i}
-                  className={shaking ? 'rattle-stick' : ''}
+                  className={shaking ? 'rattle-stick' : settling ? 'settle-stick' : ''}
                   style={{
                     position: 'absolute',
                     left: '50%',
