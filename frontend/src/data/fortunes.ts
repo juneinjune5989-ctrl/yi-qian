@@ -286,3 +286,11 @@ export function pickTodayFortune(): Fortune {
   const idx = Math.floor(Math.random() * FORTUNES.length);
   return FORTUNES[idx];
 }
+
+export const LEVEL_TONE: Record<LuckLevel, string> = {
+  great: 'hsl(var(--seal))',
+  good: 'hsl(6 52% 48%)',
+  mid: 'hsl(var(--gold))',
+  plain: 'hsl(var(--wood))',
+  low: 'hsl(210 12% 34%)',
+};

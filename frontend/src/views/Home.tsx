@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ScrollText } from 'lucide-react';
 import DrawBox from '../components/DrawBox.tsx';
 import FortuneResult from '../components/FortuneResult.tsx';
 import { pickTodayFortune, type Fortune } from '../data/fortunes.ts';
+import { addRecord } from '../lib/history.ts';
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -12,8 +15,13 @@ function todayLabel(): string {
 
 export default function Home() {
   const [fortune, setFortune] = useState<Fortune | null>(null);
+  const navigate = useNavigate();
 
-  const handleDraw = () => setFortune(pickTodayFortune());
+  const handleDraw = () => {
+    const f = pickTodayFortune();
+    addRecord({ id: f.id, no: f.no, title: f.title, level: f.level, levelType: f.levelType, motto: f.motto });
+    setFortune(f);
+  };
   const handleReset = () => setFortune(null);
 
   return (
@@ -25,6 +33,19 @@ export default function Home() {
 
       {!fortune ? (
         <div className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
+          <button
+            onClick={() => navigate('/records')}
+            className="font-song absolute right-7 top-7 flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs tracking-widest transition-colors active:scale-95"
+            style={{
+              color: 'hsl(var(--seal))',
+              border: '1px solid hsl(var(--seal) / 0.4)',
+              background: 'hsl(var(--card) / 0.6)',
+            }}
+          >
+            <ScrollText size={14} aria-hidden="true" />
+            求签记录
+          </button>
+
           <header className="mb-2 text-center">
             <div className="flex items-center justify-center gap-4">
               <span className="h-px w-10" style={{ background: 'hsl(var(--border))' }} />

@@ -1,17 +1,9 @@
-import type { Fortune, LuckLevel } from '../data/fortunes.ts';
+import { LEVEL_TONE, type Fortune } from '../data/fortunes.ts';
 
 interface FortuneResultProps {
   fortune: Fortune;
   onReset: () => void;
 }
-
-const LEVEL_TONE: Record<LuckLevel, string> = {
-  great: 'hsl(var(--seal))',
-  good: 'hsl(6 52% 48%)',
-  mid: 'hsl(var(--gold))',
-  plain: 'hsl(var(--wood))',
-  low: 'hsl(210 12% 34%)',
-};
 
 function Stars({ n }: { n: number }) {
   return (

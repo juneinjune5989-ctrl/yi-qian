@@ -1,9 +1,11 @@
 import { createBrowserRouter, type RouteObject } from 'react-router-dom';
 import Home from '../views/Home.tsx';
+import Records from '../views/Records.tsx';
 import NotFound from '../views/NotFound.tsx';
 
 const routes: RouteObject[] = [
   { path: '/', element: <Home /> },
+  { path: '/records', element: <Records /> },
   { path: '*', element: <NotFound /> },
 ];
 
