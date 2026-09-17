@@ -80,16 +80,8 @@
     animation: box-shake 0.32s ease-in-out infinite;
     transform-origin: 50% 92%;
   }
-  .settle-box {
-    animation: box-settle 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-    transform-origin: 50% 92%;
-  }
   .rattle-stick {
     animation: stick-rattle 0.3s ease-in-out infinite;
-    transform-origin: 50% 100%;
-  }
-  .settle-stick {
-    animation: stick-settle 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
     transform-origin: 50% 100%;
   }
   .rise-stick {
@@ -114,24 +106,11 @@
   80% { transform: rotate(3deg) translateX(2px); }
 }
 
-@keyframes box-settle {
-  0% { transform: rotate(-3.5deg) translateX(-3px); }
-  45% { transform: rotate(2deg) translateX(2px); }
-  75% { transform: rotate(-0.8deg) translateX(-1px); }
-  100% { transform: rotate(0deg) translateX(0); }
-}
-
 @keyframes stick-rattle {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   25% { transform: translateY(-5px) rotate(-2deg); }
   50% { transform: translateY(-2px) rotate(1.5deg); }
   75% { transform: translateY(-6px) rotate(2deg); }
-}
-
-@keyframes stick-settle {
-  0% { transform: translateY(-4px) rotate(1.5deg); }
-  50% { transform: translateY(-1px) rotate(-0.8deg); }
-  100% { transform: translateY(0) rotate(0deg); }
 }
 
 @keyframes stick-rise {

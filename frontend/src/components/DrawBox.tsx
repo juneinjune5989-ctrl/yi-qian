@@ -5,59 +5,118 @@ interface DrawBoxProps {
 }
 
 const STICK_COUNT = 11;
+const BOX_ORIGIN = '50% 92%';
+const REST_EASE = 'cubic-bezier(0.34, 1.4, 0.64, 1)';
 
 export default function DrawBox({ onDraw }: DrawBoxProps) {
-  const [shaking, setShaking] = useState(false);
-  const [settling, setSettling] = useState(false);
-  const [drawing, setDrawing] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
   const holdTimer = useRef<number | null>(null);
-  const settleTimer = useRef<number | null>(null);
-  const didShake = useRef(false);
+  const cleanupTimer = useRef<number | null>(null);
+  const shaking = useRef(false);
+  const [phase, setPhase] = useState<'idle' | 'shaking' | 'drawing'>('idle');
 
-  const clearTimer = () => {
+  const clearHold = () => {
     if (holdTimer.current !== null) {
       window.clearTimeout(holdTimer.current);
       holdTimer.current = null;
     }
   };
 
-  const stopShaking = () => {
-    setShaking(false);
-    setSettling(true);
-    if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
-    settleTimer.current = window.setTimeout(() => setSettling(false), 500);
+  const eachStick = (fn: (el: HTMLElement) => void) => {
+    boxRef.current?.querySelectorAll<HTMLElement>('.stick-inner').forEach(fn);
   };
 
-  const startPress = () => {
-    if (drawing) return;
-    didShake.current = false;
-    holdTimer.current = window.setTimeout(() => {
-      didShake.current = true;
-      setSettling(false);
-      setShaking(true);
-    }, 220);
-  };
-
-  const endPress = () => {
-    if (drawing) return;
-    clearTimer();
-    if (didShake.current) {
-      stopShaking();
-    } else {
-      triggerDraw();
+  const startShake = () => {
+    const el = boxRef.current;
+    if (!el) return;
+    if (cleanupTimer.current !== null) {
+      window.clearTimeout(cleanupTimer.current);
+      cleanupTimer.current = null;
     }
+    el.style.transition = '';
+    el.style.transform = '';
+    el.classList.add('shake-box');
+    eachStick((s) => {
+      s.style.transition = '';
+      s.style.transform = '';
+      s.classList.add('rattle-stick');
+    });
+    shaking.current = true;
+    setPhase('shaking');
   };
 
-  const cancelPress = () => {
-    clearTimer();
-    if (shaking) stopShaking();
+  // 从当前实际角度用带阻尼的过渡自然回正，避免任何跳变
+  const settleToRest = () => {
+    const el = boxRef.current;
+    if (!el || !shaking.current) return;
+    shaking.current = false;
+
+    const freeze = (node: HTMLElement) => {
+      const cur = getComputedStyle(node).transform;
+      node.classList.remove('shake-box', 'rattle-stick');
+      node.style.transition = 'none';
+      node.style.transform = cur && cur !== 'none' ? cur : 'none';
+    };
+    freeze(el);
+    eachStick(freeze);
+
+    // 强制回流，让冻结的当前姿态生效，再启动回正过渡
+    void el.offsetHeight;
+
+    el.style.transition = `transform 0.6s ${REST_EASE}`;
+    el.style.transform = 'rotate(0deg) translateX(0)';
+    eachStick((s) => {
+      s.style.transition = `transform 0.5s ${REST_EASE}`;
+      s.style.transform = 'translateY(0) rotate(0deg)';
+    });
+    setPhase('idle');
+
+    cleanupTimer.current = window.setTimeout(() => {
+      el.style.transition = '';
+      el.style.transform = '';
+      eachStick((s) => {
+        s.style.transition = '';
+        s.style.transform = '';
+      });
+    }, 640);
   };
 
   const triggerDraw = () => {
-    setShaking(false);
-    setSettling(false);
-    setDrawing(true);
+    const el = boxRef.current;
+    shaking.current = false;
+    if (cleanupTimer.current !== null) {
+      window.clearTimeout(cleanupTimer.current);
+      cleanupTimer.current = null;
+    }
+    if (el) {
+      el.classList.remove('shake-box');
+      el.style.transition = '';
+      el.style.transform = '';
+    }
+    eachStick((s) => {
+      s.classList.remove('rattle-stick');
+      s.style.transition = '';
+      s.style.transform = '';
+    });
+    setPhase('drawing');
     window.setTimeout(() => onDraw(), 1150);
+  };
+
+  const startPress = () => {
+    if (phase === 'drawing') return;
+    holdTimer.current = window.setTimeout(startShake, 220);
+  };
+
+  const endPress = () => {
+    if (phase === 'drawing') return;
+    clearHold();
+    if (shaking.current) settleToRest();
+    else triggerDraw();
+  };
+
+  const cancelPress = () => {
+    clearHold();
+    if (shaking.current) settleToRest();
   };
 
   const sticks = Array.from({ length: STICK_COUNT });
@@ -74,7 +133,7 @@ export default function DrawBox({ onDraw }: DrawBoxProps) {
         role="button"
         aria-label="抽签盒：长按摇签，轻点抽签"
       >
-        <div className={shaking ? 'shake-box h-full w-full' : settling ? 'settle-box h-full w-full' : 'h-full w-full'}>
+        <div ref={boxRef} className="h-full w-full" style={{ transformOrigin: BOX_ORIGIN }}>
           {/* 签筒内探出的签枝 */}
           <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2" style={{ width: 150, height: 130 }}>
             {sticks.map((_, i) => {
@@ -83,36 +142,37 @@ export default function DrawBox({ onDraw }: DrawBoxProps) {
               return (
                 <div
                   key={i}
-                  className={shaking ? 'rattle-stick' : settling ? 'settle-stick' : ''}
                   style={{
                     position: 'absolute',
                     left: '50%',
                     bottom: 24,
-                    width: 7,
-                    height: 92 + lift,
                     marginLeft: -3.5,
                     transform: `translateX(${spread}px) rotate(${spread * 0.28}deg)`,
-                    borderRadius: 3,
-                    background:
-                      'linear-gradient(90deg, hsl(var(--bamboo)) 0%, hsl(38 40% 88%) 45%, hsl(var(--wood) / 0.55) 100%)',
-                    boxShadow: 'inset -1px 0 1px hsl(var(--wood-dark) / 0.3)',
-                    animationDelay: `${(i % 4) * 0.05}s`,
+                    transformOrigin: '50% 100%',
                   }}
                 >
                   <div
+                    className="stick-inner"
                     style={{
-                      height: 12,
-                      borderRadius: '3px 3px 0 0',
-                      background: 'hsl(var(--seal))',
+                      width: 7,
+                      height: 92 + lift,
+                      borderRadius: 3,
+                      transformOrigin: '50% 100%',
+                      background:
+                        'linear-gradient(90deg, hsl(var(--bamboo)) 0%, hsl(38 40% 88%) 45%, hsl(var(--wood) / 0.55) 100%)',
+                      boxShadow: 'inset -1px 0 1px hsl(var(--wood-dark) / 0.3)',
+                      animationDelay: `${(i % 4) * 0.05}s`,
                     }}
-                  />
+                  >
+                    <div style={{ height: 12, borderRadius: '3px 3px 0 0', background: 'hsl(var(--seal))' }} />
+                  </div>
                 </div>
               );
             })}
           </div>
 
           {/* 抽出的那支签 */}
-          {drawing && (
+          {phase === 'drawing' && (
             <div
               className="rise-stick absolute left-1/2 z-20"
               style={{ bottom: 150, width: 11, height: 150, marginLeft: -5.5 }}
@@ -149,17 +209,12 @@ export default function DrawBox({ onDraw }: DrawBoxProps) {
             {/* 顶口 */}
             <div
               className="absolute inset-x-0 top-0 h-5"
-              style={{
-                background: 'linear-gradient(180deg, hsl(var(--wood-dark)), hsl(var(--wood) / 0))',
-              }}
+              style={{ background: 'linear-gradient(180deg, hsl(var(--wood-dark)), hsl(var(--wood) / 0))' }}
             />
             {/* 朱砂题字带 */}
             <div
               className="absolute left-1/2 top-9 flex -translate-x-1/2 flex-col items-center justify-center gap-1 rounded-sm px-3 py-3"
-              style={{
-                background: 'hsl(var(--seal))',
-                boxShadow: '0 2px 6px hsl(var(--wood-dark) / 0.4)',
-              }}
+              style={{ background: 'hsl(var(--seal))', boxShadow: '0 2px 6px hsl(var(--wood-dark) / 0.4)' }}
             >
               <span
                 className="writing-vertical font-song text-2xl font-bold tracking-widest"
@@ -173,7 +228,7 @@ export default function DrawBox({ onDraw }: DrawBoxProps) {
       </div>
 
       <p className="mt-8 font-song text-sm tracking-[0.3em]" style={{ color: 'hsl(var(--muted-foreground))' }}>
-        {drawing ? '　签　已　出　' : shaking ? '　诚　心　摇　签　' : '长按摇一摇 · 轻点求签'}
+        {phase === 'drawing' ? '　签　已　出　' : phase === 'shaking' ? '　诚　心　摇　签　' : '长按摇一摇 · 轻点求签'}
       </p>
     </div>
   );
