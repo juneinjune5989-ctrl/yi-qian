@@ -47,6 +47,9 @@ export default function Home() {
           </button>
 
           <header className="mb-2 text-center">
+            <p className="mb-3 text-xs tracking-[0.25em]" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              {todayLabel()}
+            </p>
             <div className="flex items-center justify-center gap-4">
               <span className="h-px w-10" style={{ background: 'hsl(var(--border))' }} />
               <h1
@@ -57,9 +60,6 @@ export default function Home() {
               </h1>
               <span className="h-px w-10" style={{ background: 'hsl(var(--border))' }} />
             </div>
-            <p className="mt-3 text-xs tracking-[0.25em]" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              {todayLabel()}
-            </p>
           </header>
 
           <div className="mt-6 breathe">
