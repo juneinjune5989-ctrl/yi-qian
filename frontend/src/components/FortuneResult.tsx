@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ChevronDown, Compass, ScrollText, Share2, Sparkles } from 'lucide-react';
+import { ChevronDown, Compass, Home as HomeIcon, ScrollText, Share2, Sparkles } from 'lucide-react';
 import { LEVEL_TONE, type Fortune } from '../data/fortunes.ts';
 
 interface FortuneResultProps {
   fortune: Fortune;
   onViewRecords: () => void;
+  onBackHome: () => void;
 }
 
 function Stars({ n }: { n: number }) {
@@ -32,7 +33,7 @@ function AspectRow({ label, stars, text }: { label: string; stars: number; text:
   );
 }
 
-export default function FortuneResult({ fortune, onViewRecords }: FortuneResultProps) {
+export default function FortuneResult({ fortune, onViewRecords, onBackHome }: FortuneResultProps) {
   const tone = LEVEL_TONE[fortune.levelType];
   const a = fortune.aspects;
 
@@ -142,31 +143,43 @@ export default function FortuneResult({ fortune, onViewRecords }: FortuneResultP
         「 {fortune.motto} 」
       </p>
 
-      <div className="mt-8 grid grid-cols-2 gap-3">
+      <div className="mt-8 grid grid-cols-3 gap-2.5">
         <button
           onClick={handleShare}
-          className="font-song flex items-center justify-center gap-2 rounded-md py-3.5 text-base font-semibold tracking-[0.2em] transition-transform active:scale-[0.98]"
+          className="font-song flex items-center justify-center gap-1.5 rounded-md py-3.5 text-sm font-semibold tracking-[0.1em] transition-transform active:scale-[0.98]"
           style={{
             color: 'hsl(var(--seal))',
             background: 'hsl(var(--card))',
             border: '1px solid hsl(var(--seal) / 0.45)',
           }}
         >
-          <Share2 size={16} aria-hidden="true" />
+          <Share2 size={15} aria-hidden="true" />
           赠签结缘
         </button>
         <button
           onClick={() => setShowGuide((v) => !v)}
-          className="font-song flex items-center justify-center gap-2 rounded-md py-3.5 text-base font-semibold tracking-[0.2em] transition-transform active:scale-[0.98]"
+          className="font-song flex items-center justify-center gap-1 rounded-md py-3.5 text-sm font-semibold tracking-[0.1em] transition-transform active:scale-[0.98]"
           style={{ background: 'hsl(var(--seal))', color: 'hsl(var(--primary-foreground))' }}
         >
-          <Compass size={16} aria-hidden="true" />
+          <Compass size={15} aria-hidden="true" />
           顺势指点
           <ChevronDown
-            size={16}
+            size={14}
             aria-hidden="true"
             style={{ transition: 'transform 0.3s', transform: showGuide ? 'rotate(180deg)' : 'none' }}
           />
+        </button>
+        <button
+          onClick={onBackHome}
+          className="font-song flex items-center justify-center gap-1.5 rounded-md py-3.5 text-sm font-semibold tracking-[0.1em] transition-transform active:scale-[0.98]"
+          style={{
+            color: 'hsl(var(--seal))',
+            background: 'hsl(var(--card))',
+            border: '1px solid hsl(var(--seal) / 0.45)',
+          }}
+        >
+          <HomeIcon size={15} aria-hidden="true" />
+          回到首页
         </button>
       </div>
 

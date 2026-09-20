@@ -18,13 +18,17 @@ export default function Home() {
     const todayId = getTodayFortuneId();
     return todayId != null ? getFortuneById(todayId) ?? null : null;
   });
+  const [view, setView] = useState<'entry' | 'result'>('entry');
   const navigate = useNavigate();
+
+  const drawnToday = fortune != null;
 
   const handleDraw = () => {
     const f = pickTodayFortune();
     setTodayFortuneId(f.id);
     addRecord({ id: f.id, no: f.no, title: f.title, level: f.level, levelType: f.levelType, motto: f.motto });
     setFortune(f);
+    setView('result');
   };
 
   return (
@@ -34,7 +38,13 @@ export default function Home() {
       <Corner className="bottom-4 left-4 -rotate-90" />
       <Corner className="bottom-4 right-4 rotate-180" />
 
-      {!fortune ? (
+      {view === 'result' && fortune ? (
+        <FortuneResult
+          fortune={fortune}
+          onViewRecords={() => navigate('/records')}
+          onBackHome={() => setView('entry')}
+        />
+      ) : (
         <div className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
           <button
             onClick={() => navigate('/records')}
@@ -65,20 +75,61 @@ export default function Home() {
             </div>
           </header>
 
-          <div className="mt-6 breathe">
-            <DrawBox onDraw={handleDraw} />
-          </div>
-
-          <p
-            className="font-song mt-12 max-w-xs text-center text-xs leading-relaxed tracking-wide"
-            style={{ color: 'hsl(var(--muted-foreground))' }}
-          >
-            静心默念所问之事，长按签筒摇一摇，轻点求得今日一签。
-          </p>
+          {drawnToday ? (
+            <DrawnPanel fortune={fortune} onView={() => setView('result')} />
+          ) : (
+            <>
+              <div className="mt-6 breathe">
+                <DrawBox onDraw={handleDraw} />
+              </div>
+              <p
+                className="font-song mt-12 max-w-xs text-center text-xs leading-relaxed tracking-wide"
+                style={{ color: 'hsl(var(--muted-foreground))' }}
+              >
+                静心默念所问之事，长按签筒摇一摇，轻点求得今日一签。
+              </p>
+            </>
+          )}
         </div>
-      ) : (
-        <FortuneResult fortune={fortune} onViewRecords={() => navigate('/records')} />
       )}
+    </div>
+  );
+}
+
+function DrawnPanel({ fortune, onView }: { fortune: Fortune; onView: () => void }) {
+  return (
+    <div className="mt-10 flex flex-col items-center">
+      <div
+        className="flex h-36 w-28 flex-col items-center justify-center rounded-md"
+        style={{
+          background: 'hsl(var(--card))',
+          border: '1px solid hsl(var(--seal) / 0.4)',
+          boxShadow: '0 8px 24px hsl(var(--wood-dark) / 0.12)',
+        }}
+      >
+        <span className="text-xs tracking-widest" style={{ color: 'hsl(var(--muted-foreground))' }}>
+          {fortune.no}
+        </span>
+        <span
+          className="writing-vertical font-song mt-2 text-2xl font-bold tracking-widest"
+          style={{ color: 'hsl(var(--seal))' }}
+        >
+          {fortune.level}
+        </span>
+      </div>
+      <p className="font-song mt-6 text-sm tracking-widest" style={{ color: 'hsl(var(--foreground))' }}>
+        今日已求得此签
+      </p>
+      <p className="mt-1.5 text-xs tracking-wide" style={{ color: 'hsl(var(--muted-foreground))' }}>
+        每日一签 · 明日可再求
+      </p>
+      <button
+        onClick={onView}
+        className="font-song mt-6 rounded-md px-8 py-3 text-sm font-semibold tracking-[0.25em] transition-transform active:scale-[0.98]"
+        style={{ background: 'hsl(var(--seal))', color: 'hsl(var(--primary-foreground))' }}
+      >
+        查看今日运势
+      </button>
     </div>
   );
 }
