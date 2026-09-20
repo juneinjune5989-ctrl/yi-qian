@@ -8,6 +8,34 @@ interface FortuneResultProps {
   onBackHome: () => void;
 }
 
+async function copyText(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    /* 降级到 execCommand */
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '0';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 function Stars({ n }: { n: number }) {
   return (
     <span className="font-song text-base tracking-tight" style={{ color: 'hsl(var(--seal))' }} aria-label={`${n}星`}>
@@ -45,18 +73,15 @@ export default function FortuneResult({ fortune, onViewRecords, onBackHome }: Fo
   const [shareTip, setShareTip] = useState('');
 
   const handleShare = async () => {
-    const text = `【今日运势 · ${fortune.no}】${fortune.title}（${fortune.level}）\n${fortune.poem.join('，')}。\n「${fortune.motto}」`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: '今日运势', text });
-        return;
-      }
-      await navigator.clipboard.writeText(text);
-      setShareTip('签文已复制，可分享给有缘人');
-    } catch {
-      setShareTip('签文已复制，可分享给有缘人');
-    }
-    window.setTimeout(() => setShareTip(''), 2600);
+    const text = [
+      `【今日运势 · ${fortune.no}】${fortune.title}（${fortune.level}）`,
+      `${fortune.poem.join('，')}。`,
+      `「${fortune.motto}」`,
+      '—— 每日一签 · 诚心求签 · 顺势而为',
+    ].join('\n');
+    const ok = await copyText(text);
+    setShareTip(ok ? '签文已复制，可粘贴分享给有缘人' : '复制未成功，请长按选中签文');
+    window.setTimeout(() => setShareTip(''), 2800);
   };
 
   return (
@@ -143,42 +168,43 @@ export default function FortuneResult({ fortune, onViewRecords, onBackHome }: Fo
         「 {fortune.motto} 」
       </p>
 
-      <div className="mt-8 grid grid-cols-3 gap-2.5">
+      <div className="mt-8 grid grid-cols-3 gap-2">
         <button
           onClick={handleShare}
-          className="font-song flex items-center justify-center gap-1.5 rounded-md py-3.5 text-sm font-semibold tracking-[0.1em] transition-transform active:scale-[0.98]"
+          className="font-song flex items-center justify-center gap-1 whitespace-nowrap rounded-md px-0.5 py-3.5 text-[13px] font-semibold transition-transform active:scale-[0.98]"
           style={{
             color: 'hsl(var(--seal))',
             background: 'hsl(var(--card))',
             border: '1px solid hsl(var(--seal) / 0.45)',
           }}
         >
-          <Share2 size={15} aria-hidden="true" />
+          <Share2 size={14} aria-hidden="true" className="shrink-0" />
           赠签结缘
         </button>
         <button
           onClick={() => setShowGuide((v) => !v)}
-          className="font-song flex items-center justify-center gap-1 rounded-md py-3.5 text-sm font-semibold tracking-[0.1em] transition-transform active:scale-[0.98]"
+          className="font-song flex items-center justify-center gap-0.5 whitespace-nowrap rounded-md px-0.5 py-3.5 text-[13px] font-semibold transition-transform active:scale-[0.98]"
           style={{ background: 'hsl(var(--seal))', color: 'hsl(var(--primary-foreground))' }}
         >
-          <Compass size={15} aria-hidden="true" />
+          <Compass size={14} aria-hidden="true" className="shrink-0" />
           顺势指点
           <ChevronDown
-            size={14}
+            size={13}
             aria-hidden="true"
+            className="shrink-0"
             style={{ transition: 'transform 0.3s', transform: showGuide ? 'rotate(180deg)' : 'none' }}
           />
         </button>
         <button
           onClick={onBackHome}
-          className="font-song flex items-center justify-center gap-1.5 rounded-md py-3.5 text-sm font-semibold tracking-[0.1em] transition-transform active:scale-[0.98]"
+          className="font-song flex items-center justify-center gap-1 whitespace-nowrap rounded-md px-0.5 py-3.5 text-[13px] font-semibold transition-transform active:scale-[0.98]"
           style={{
             color: 'hsl(var(--seal))',
             background: 'hsl(var(--card))',
             border: '1px solid hsl(var(--seal) / 0.45)',
           }}
         >
-          <HomeIcon size={15} aria-hidden="true" />
+          <HomeIcon size={14} aria-hidden="true" className="shrink-0" />
           回到首页
         </button>
       </div>
