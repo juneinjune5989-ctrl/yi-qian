@@ -3,6 +3,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Noto Serif SC App';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/NotoSerifSC-Regular.subset.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Noto Serif SC App';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/NotoSerifSC-Bold.subset.woff2') format('woff2');
+}
+
 @layer base {
   :root {
     /* 中式复古 · 宣纸 / 墨 / 朱砂 / 竹木 / 金 */
@@ -51,7 +66,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'Noto Serif SC', serif;
+    font-family: 'Noto Serif SC App', 'Songti SC', 'STSong', 'SimSun', 'Noto Serif SC', serif;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
   }
@@ -59,7 +74,7 @@
 
 @layer components {
   .font-song {
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'Noto Serif SC', serif;
+    font-family: 'Noto Serif SC App', 'Songti SC', 'STSong', 'SimSun', 'Noto Serif SC', serif;
   }
   .writing-vertical {
     writing-mode: vertical-rl;
