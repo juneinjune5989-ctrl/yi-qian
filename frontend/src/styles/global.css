@@ -3,6 +3,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 硬朗开源老宋体（文鼎 PL 上海宋，Arphic Public License，可自由商用）
+   仅作移动端等无系统宋体环境的兜底字体，桌面端仍优先使用系统方正宋体 */
+@font-face {
+  font-family: 'MaliSongFallback';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../assets/fonts/UMingCN-song.subset.woff2') format('woff2');
+}
+
 @layer base {
   :root {
     /* 中式复古 · 宣纸 / 墨 / 朱砂 / 竹木 / 金 */
@@ -51,7 +61,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'Noto Serif SC', serif;
+    font-family: 'Songti SC', 'STSong', 'SimSun', 'MaliSongFallback', 'Noto Serif SC', serif;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
   }
@@ -59,7 +69,7 @@
 
 @layer components {
   .font-song {
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'Noto Serif SC', serif;
+    font-family: 'Songti SC', 'STSong', 'SimSun', 'MaliSongFallback', 'Noto Serif SC', serif;
   }
   .writing-vertical {
     writing-mode: vertical-rl;
