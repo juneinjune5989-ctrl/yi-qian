@@ -25,6 +25,7 @@ export interface Fortune {
   luckyNumber: string;
   luckyDirection: string;
   motto: string;
+  guidance: string[];
 }
 
 export const FORTUNES: Fortune[] = [
@@ -48,6 +49,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '三',
     luckyDirection: '正东',
     motto: '时来运转，宜乘风而上。',
+    guidance: ['趁势而进，主动请缨承担要务', '广结善缘，贵人相助更添助力', '立长远之志，勿因小成而止步'],
   },
   {
     id: 2,
@@ -69,6 +71,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '八',
     luckyDirection: '东南',
     motto: '春种一粒粟，秋收万颗子。',
+    guidance: ['顺势加码，把握回暖之机深耕', '稳中提速，将积累化为成果', '常怀感恩，善待助你之人'],
   },
   {
     id: 3,
@@ -90,6 +93,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '六',
     luckyDirection: '正北',
     motto: '知足者，心常安。',
+    guidance: ['收回向外攀求之心，珍视手边所有', '与身边人多亲近，福自近处生', '守正待时，勿因浮躁而错失'],
   },
   {
     id: 4,
@@ -111,6 +115,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '四',
     luckyDirection: '西北',
     motto: '潮有涨落，静候其时。',
+    guidance: ['暂敛锋芒，蓄力以待良机', '复盘得失，补足短板再启航', '忍一时之滞，勿强行逆流'],
   },
   {
     id: 5,
@@ -132,6 +137,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '九',
     luckyDirection: '正南',
     motto: '得道多助，善缘生福。',
+    guidance: ['主动求助贵人，好事更易促成', '礼尚往来，善缘可长久生利', '借合作之势，扩大成果格局'],
   },
   {
     id: 6,
@@ -153,6 +159,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '七',
     luckyDirection: '东北',
     motto: '心若晴朗，处处光明。',
+    guidance: ['主动开诚沟通，误会自可冰释', '放下积怨，重启搁置之事', '以诚待人，晴光自来心头'],
   },
   {
     id: 7,
@@ -174,6 +181,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '五',
     luckyDirection: '正西',
     motto: '一分耕耘，一分收获。',
+    guidance: ['莫存侥幸，回归脚踏实地', '精进本业，以实力立身', '勤耕不辍，福报自然积厚'],
   },
   {
     id: 8,
@@ -195,6 +203,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '一',
     luckyDirection: '正东',
     motto: '功不唐捐，玉汝于成。',
+    guidance: ['乘势展示，大胆公开表态争先', '光明磊落，戒骄戒躁守初心', '分享喜悦，善缘助你更进一程'],
   },
   {
     id: 9,
@@ -216,6 +225,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '二',
     luckyDirection: '东南',
     motto: '向前一步，皆是新生。',
+    guidance: ['放下过往包袱，把握眼前新机', '转念即转运，重整旗鼓正当时', '循序调养身心，勿因旧困废今欢'],
   },
   {
     id: 10,
@@ -237,6 +247,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '十',
     luckyDirection: '正北',
     motto: '退一步稳，忍一时安。',
+    guidance: ['暂收帆歇力，避锋芒不冒进', '谨言慎行，严控开支与借贷', '多包容忍让，可避口角与祸端'],
   },
   {
     id: 11,
@@ -258,6 +269,7 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '六',
     luckyDirection: '正南',
     motto: '心怀善念，喜自天来。',
+    guidance: ['主动接住机遇，勿疑神疑鬼', '惜福纳祥，心存感恩广积善', '珍视和顺人际，喜上更添喜'],
   },
   {
     id: 12,
@@ -279,12 +291,17 @@ export const FORTUNES: Fortune[] = [
     luckyNumber: '八',
     luckyDirection: '西北',
     motto: '静水流深，厚积致远。',
+    guidance: ['低调沉潜，专注积累不争锋', '长线布局，厚积方能致远', '静心修身，勿因平淡而急躁'],
   },
 ];
 
 export function pickTodayFortune(): Fortune {
   const idx = Math.floor(Math.random() * FORTUNES.length);
   return FORTUNES[idx];
+}
+
+export function getFortuneById(id: number): Fortune | undefined {
+  return FORTUNES.find((f) => f.id === id);
 }
 
 export const LEVEL_TONE: Record<LuckLevel, string> = {

@@ -1,8 +1,10 @@
+import { useState } from 'react';
+import { ChevronDown, Compass, ScrollText, Share2, Sparkles } from 'lucide-react';
 import { LEVEL_TONE, type Fortune } from '../data/fortunes.ts';
 
 interface FortuneResultProps {
   fortune: Fortune;
-  onReset: () => void;
+  onViewRecords: () => void;
 }
 
 function Stars({ n }: { n: number }) {
@@ -30,9 +32,31 @@ function AspectRow({ label, stars, text }: { label: string; stars: number; text:
   );
 }
 
-export default function FortuneResult({ fortune, onReset }: FortuneResultProps) {
+export default function FortuneResult({ fortune, onViewRecords }: FortuneResultProps) {
   const tone = LEVEL_TONE[fortune.levelType];
   const a = fortune.aspects;
+
+  const isPositive = fortune.levelType === 'great' || fortune.levelType === 'good';
+  const guideTitle = isPositive ? '锦 上 添 花' : '化 解 之 道';
+  const guideHint = isPositive ? '好签当乘势，助你运上加运' : '签有波折，指你破局转运';
+
+  const [showGuide, setShowGuide] = useState(false);
+  const [shareTip, setShareTip] = useState('');
+
+  const handleShare = async () => {
+    const text = `【今日运势 · ${fortune.no}】${fortune.title}（${fortune.level}）\n${fortune.poem.join('，')}。\n「${fortune.motto}」`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: '今日运势', text });
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      setShareTip('签文已复制，可分享给有缘人');
+    } catch {
+      setShareTip('签文已复制，可分享给有缘人');
+    }
+    window.setTimeout(() => setShareTip(''), 2600);
+  };
 
   return (
     <div className="fade-up mx-auto w-full max-w-md px-6 pb-16 pt-10">
@@ -118,13 +142,94 @@ export default function FortuneResult({ fortune, onReset }: FortuneResultProps) 
         「 {fortune.motto} 」
       </p>
 
+      <div className="mt-8 grid grid-cols-2 gap-3">
+        <button
+          onClick={handleShare}
+          className="font-song flex items-center justify-center gap-2 rounded-md py-3.5 text-base font-semibold tracking-[0.2em] transition-transform active:scale-[0.98]"
+          style={{
+            color: 'hsl(var(--seal))',
+            background: 'hsl(var(--card))',
+            border: '1px solid hsl(var(--seal) / 0.45)',
+          }}
+        >
+          <Share2 size={16} aria-hidden="true" />
+          赠签结缘
+        </button>
+        <button
+          onClick={() => setShowGuide((v) => !v)}
+          className="font-song flex items-center justify-center gap-2 rounded-md py-3.5 text-base font-semibold tracking-[0.2em] transition-transform active:scale-[0.98]"
+          style={{ background: 'hsl(var(--seal))', color: 'hsl(var(--primary-foreground))' }}
+        >
+          <Compass size={16} aria-hidden="true" />
+          顺势指点
+          <ChevronDown
+            size={16}
+            aria-hidden="true"
+            style={{ transition: 'transform 0.3s', transform: showGuide ? 'rotate(180deg)' : 'none' }}
+          />
+        </button>
+      </div>
+
+      {shareTip && (
+        <p className="fade-up mt-3 text-center text-xs tracking-widest" style={{ color: 'hsl(var(--muted-foreground))' }}>
+          {shareTip}
+        </p>
+      )}
+
+      {showGuide && (
+        <div
+          className="fade-up mt-4 rounded-lg px-5 py-5"
+          style={{
+            background: 'hsl(var(--card))',
+            border: `1px solid ${isPositive ? 'hsl(var(--seal) / 0.4)' : 'hsl(210 12% 34% / 0.35)'}`,
+            boxShadow: '0 6px 20px hsl(var(--wood-dark) / 0.08)',
+          }}
+        >
+          <div className="flex items-center justify-center gap-2">
+            <Sparkles size={15} aria-hidden="true" style={{ color: isPositive ? 'hsl(var(--seal))' : 'hsl(var(--wood))' }} />
+            <span
+              className="font-song text-base font-bold tracking-[0.3em]"
+              style={{ color: isPositive ? 'hsl(var(--seal))' : 'hsl(var(--foreground))' }}
+            >
+              {guideTitle}
+            </span>
+          </div>
+          <p className="mt-1.5 text-center text-xs tracking-wide" style={{ color: 'hsl(var(--muted-foreground))' }}>
+            {guideHint}
+          </p>
+          <ul className="mt-4 space-y-3">
+            {fortune.guidance.map((tip, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span
+                  className="font-song mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                  style={{
+                    background: isPositive ? 'hsl(var(--seal))' : 'hsl(var(--wood))',
+                    color: 'hsl(var(--primary-foreground))',
+                  }}
+                >
+                  {i + 1}
+                </span>
+                <span className="font-song text-sm leading-relaxed" style={{ color: 'hsl(var(--ink-soft))' }}>
+                  {tip}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <button
-        onClick={onReset}
-        className="font-song mt-8 w-full rounded-md py-3.5 text-base font-semibold tracking-[0.3em] transition-transform active:scale-[0.98]"
-        style={{ background: 'hsl(var(--seal))', color: 'hsl(var(--primary-foreground))' }}
+        onClick={onViewRecords}
+        className="font-song mx-auto mt-7 flex w-fit items-center gap-1.5 text-xs tracking-[0.25em] transition-colors active:scale-95"
+        style={{ color: 'hsl(var(--muted-foreground))' }}
       >
-        再 求 一 签
+        <ScrollText size={13} aria-hidden="true" />
+        查看求签记录
       </button>
+
+      <p className="mt-4 text-center text-xs tracking-widest" style={{ color: 'hsl(var(--muted-foreground) / 0.8)' }}>
+        每日一签 · 明日可再求
+      </p>
     </div>
   );
 }

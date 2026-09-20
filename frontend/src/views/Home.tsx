@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ScrollText } from 'lucide-react';
 import DrawBox from '../components/DrawBox.tsx';
 import FortuneResult from '../components/FortuneResult.tsx';
-import { pickTodayFortune, type Fortune } from '../data/fortunes.ts';
-import { addRecord } from '../lib/history.ts';
+import { pickTodayFortune, getFortuneById, type Fortune } from '../data/fortunes.ts';
+import { addRecord, getTodayFortuneId, setTodayFortuneId } from '../lib/history.ts';
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -14,15 +14,18 @@ function todayLabel(): string {
 }
 
 export default function Home() {
-  const [fortune, setFortune] = useState<Fortune | null>(null);
+  const [fortune, setFortune] = useState<Fortune | null>(() => {
+    const todayId = getTodayFortuneId();
+    return todayId != null ? getFortuneById(todayId) ?? null : null;
+  });
   const navigate = useNavigate();
 
   const handleDraw = () => {
     const f = pickTodayFortune();
+    setTodayFortuneId(f.id);
     addRecord({ id: f.id, no: f.no, title: f.title, level: f.level, levelType: f.levelType, motto: f.motto });
     setFortune(f);
   };
-  const handleReset = () => setFortune(null);
 
   return (
     <div className="paper-grain relative min-h-screen w-full overflow-hidden">
@@ -74,7 +77,7 @@ export default function Home() {
           </p>
         </div>
       ) : (
-        <FortuneResult fortune={fortune} onReset={handleReset} />
+        <FortuneResult fortune={fortune} onViewRecords={() => navigate('/records')} />
       )}
     </div>
   );
