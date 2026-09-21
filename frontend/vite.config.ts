@@ -8,7 +8,8 @@ import autoprefixer from 'autoprefixer';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
   return {
-    base: env.VITE_BASE_PATH || '/',
+    // 生产包使用相对资源路径，部署到任意 GitHub Pages 子路径都能正常加载。
+    base: mode === 'production' ? './' : '/',
     plugins: [
       // tracker / observe 必须排在 react() 之前，顺序不可调换
       tracker({ baseUrl: env.VITE_API_BASE_URL || 'http://localhost:8090' }),
