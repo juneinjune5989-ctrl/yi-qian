@@ -11,6 +11,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:static": "vite build --mode production",
+    "build:xhs": "vite build --mode xhs --outDir dist-xhs && node scripts/postprocess-xhs.mjs dist-xhs && cd dist-xhs && zip -rFS ../yi-qian-xhs-1.0.0.zip . -x '*.DS_Store' '*.map'",
     "typecheck": "tsc -b",
     "preview": "vite preview"
   },

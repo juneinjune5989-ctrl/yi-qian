@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ScrollText } from 'lucide-react';
 import DrawBox from '../components/DrawBox.tsx';
 import FortuneResult from '../components/FortuneResult.tsx';
@@ -13,13 +12,20 @@ function todayLabel(): string {
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 · 星期${WEEKDAYS[d.getDay()]}`;
 }
 
-export default function Home() {
+interface HomeProps {
+  onViewRecords?: () => void;
+}
+
+export default function Home({ onViewRecords }: HomeProps) {
   const [fortune, setFortune] = useState<Fortune | null>(() => {
     const todayId = getTodayFortuneId();
     return todayId != null ? getFortuneById(todayId) ?? null : null;
   });
   const [view, setView] = useState<'entry' | 'result'>('entry');
-  const navigate = useNavigate();
+
+  const goRecords = onViewRecords ?? (() => {
+    window.location.hash = '#/records';
+  });
 
   const drawnToday = fortune != null;
 
@@ -41,13 +47,13 @@ export default function Home() {
       {view === 'result' && fortune ? (
         <FortuneResult
           fortune={fortune}
-          onViewRecords={() => navigate('/records')}
+          onViewRecords={goRecords}
           onBackHome={() => setView('entry')}
         />
       ) : (
         <div className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
           <button
-            onClick={() => navigate('/records')}
+            onClick={goRecords}
             className="font-song absolute right-7 top-7 flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs tracking-widest transition-colors active:scale-95"
             style={{
               color: 'hsl(var(--seal))',

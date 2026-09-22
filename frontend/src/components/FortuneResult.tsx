@@ -8,34 +8,6 @@ interface FortuneResultProps {
   onBackHome: () => void;
 }
 
-async function copyText(text: string): Promise<boolean> {
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-  } catch {
-    /* 降级到 execCommand */
-  }
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.top = '0';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    ta.setSelectionRange(0, text.length);
-    const ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-    return ok;
-  } catch {
-    return false;
-  }
-}
-
 function Stars({ n }: { n: number }) {
   return (
     <span className="font-song text-base tracking-tight" style={{ color: 'hsl(var(--seal))' }} aria-label={`${n}星`}>
@@ -71,16 +43,17 @@ export default function FortuneResult({ fortune, onViewRecords, onBackHome }: Fo
 
   const [showGuide, setShowGuide] = useState(false);
   const [shareTip, setShareTip] = useState('');
+  const [shareText, setShareText] = useState('');
 
-  const handleShare = async () => {
+  const handleShare = () => {
     const text = [
       `【今日运势 · ${fortune.no}】${fortune.title}（${fortune.level}）`,
       `${fortune.poem.join('，')}。`,
       `「${fortune.motto}」`,
       '—— 每日一签 · 诚心求签 · 顺势而为',
     ].join('\n');
-    const ok = await copyText(text);
-    setShareTip(ok ? '签文已复制，可粘贴分享给有缘人' : '复制未成功，请长按选中签文');
+    setShareText(text);
+    setShareTip('签文已展开，可手动摘录分享');
     window.setTimeout(() => setShareTip(''), 2800);
   };
 
@@ -113,9 +86,9 @@ export default function FortuneResult({ fortune, onViewRecords, onBackHome }: Fo
         style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: '0 6px 20px hsl(var(--wood-dark) / 0.08)' }}
       >
         <div className="flex justify-center gap-5">
-          {fortune.poem.map((line, i) => (
+          {[...fortune.poem].reverse().map((line, i) => (
             <p
-              key={i}
+              key={`${line}-${i}`}
               className="writing-vertical font-song text-xl font-medium tracking-[0.25em]"
               style={{ color: 'hsl(var(--foreground))', lineHeight: 1.9 }}
             >
@@ -213,6 +186,22 @@ export default function FortuneResult({ fortune, onViewRecords, onBackHome }: Fo
         <p className="fade-up mt-3 text-center text-xs tracking-widest" style={{ color: 'hsl(var(--muted-foreground))' }}>
           {shareTip}
         </p>
+      )}
+
+      {shareText && (
+        <div
+          className="fade-up mt-4 rounded-lg px-4 py-4"
+          style={{
+            background: 'hsl(var(--card))',
+            border: '1px solid hsl(var(--border))',
+            userSelect: 'text',
+            WebkitUserSelect: 'text',
+          }}
+        >
+          <p className="whitespace-pre-line text-sm leading-loose" style={{ color: 'hsl(var(--ink-soft))' }}>
+            {shareText}
+          </p>
+        </div>
       )}
 
       {showGuide && (

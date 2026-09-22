@@ -7,13 +7,21 @@ import autoprefixer from 'autoprefixer';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
+  const isXhs = mode === 'xhs';
+
   return {
-    // 生产包使用相对资源路径，部署到任意 GitHub Pages 子路径都能正常加载。
-    base: mode === 'production' ? './' : '/',
+    // 生产包使用相对资源路径，部署到任意 GitHub Pages 子路径都能正常加载；小红书离线包也必须使用相对路径。
+    base: mode === 'production' || isXhs ? './' : '/',
     plugins: [
-      // tracker / observe 必须排在 react() 之前，顺序不可调换
-      tracker({ baseUrl: env.VITE_API_BASE_URL || 'http://localhost:8090' }),
-      observe({ serverPrefix: env.VITE_BASE_PATH || '/' }),
+      // 小红书离线包不能包含联网/观测插件；普通开发包保持原有插件顺序。
+      ...(
+        isXhs
+          ? []
+          : [
+              tracker({ baseUrl: env.VITE_API_BASE_URL || 'http://localhost:8090' }),
+              observe({ serverPrefix: env.VITE_BASE_PATH || '/' }),
+            ]
+      ),
       react(),
     ],
     resolve: {
@@ -36,6 +44,12 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
         },
       },
+    },
+    build: {
+      target: ['es2017', 'chrome61'],
+      cssTarget: 'chrome61',
+      modulePreload: false,
+      sourcemap: false,
     },
   };
 });

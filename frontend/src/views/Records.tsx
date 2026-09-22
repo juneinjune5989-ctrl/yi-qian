@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Trash2 } from 'lucide-react';
 import { LEVEL_TONE } from '../data/fortunes.ts';
 import { loadHistory, clearHistory, type FortuneRecord } from '../lib/history.ts';
@@ -10,10 +9,17 @@ function formatTime(iso: string): string {
   return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-export default function Records() {
-  const navigate = useNavigate();
+interface RecordsProps {
+  onBackHome?: () => void;
+}
+
+export default function Records({ onBackHome }: RecordsProps) {
   const [records, setRecords] = useState<FortuneRecord[]>(() => loadHistory());
   const [confirming, setConfirming] = useState(false);
+
+  const goHome = onBackHome ?? (() => {
+    window.location.hash = '#/';
+  });
 
   const handleClear = () => {
     if (!confirming) {
@@ -35,7 +41,7 @@ export default function Records() {
       <div className="mx-auto w-full max-w-md px-6 pb-16 pt-8">
         <div className="flex items-center justify-between">
           <button
-            onClick={() => navigate('/')}
+            onClick={goHome}
             className="font-song flex items-center gap-1 text-sm tracking-widest active:scale-95"
             style={{ color: 'hsl(var(--muted-foreground))' }}
             aria-label="返回"
@@ -73,7 +79,7 @@ export default function Records() {
         </header>
 
         {records.length === 0 ? (
-          <EmptyState onGo={() => navigate('/')} />
+          <EmptyState onGo={goHome} />
         ) : (
           <ul className="space-y-3">
             {records.map((r) => (
