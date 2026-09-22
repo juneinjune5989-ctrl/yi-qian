@@ -85,8 +85,8 @@ export default function FortuneResult({ fortune, onViewRecords, onBackHome }: Fo
         className="mt-8 rounded-lg px-6 py-7"
         style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: '0 6px 20px hsl(var(--wood-dark) / 0.08)' }}
       >
-        <div className="flex justify-center gap-5">
-          {[...fortune.poem].reverse().map((line, i) => (
+        <div className="flex flex-row-reverse justify-center gap-5">
+          {fortune.poem.map((line, i) => (
             <p
               key={`${line}-${i}`}
               className="writing-vertical font-song text-xl font-medium tracking-[0.25em]"
