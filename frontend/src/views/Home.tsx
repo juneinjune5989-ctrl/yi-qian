@@ -69,7 +69,7 @@ export default function Home() {
                 className="font-song text-3xl font-bold tracking-[0.4em]"
                 style={{ color: 'hsl(var(--foreground))' }}
               >
-                今日运势
+                每日一签
               </h1>
               <span className="h-px w-10" style={{ background: 'hsl(var(--border))' }} />
             </div>
