@@ -8,6 +8,35 @@ interface FortuneResultProps {
   onBackHome: () => void;
 }
 
+async function copyText(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // 继续使用传统浏览器复制方式
+  }
+
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, text.length);
+    const copied = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return copied;
+  } catch {
+    return false;
+  }
+}
+
 function Stars({ n }: { n: number }) {
   return (
     <span className="font-song text-base tracking-tight" style={{ color: 'hsl(var(--seal))' }} aria-label={`${n}星`}>
@@ -45,15 +74,22 @@ export default function FortuneResult({ fortune, onViewRecords, onBackHome }: Fo
   const [shareTip, setShareTip] = useState('');
   const [shareText, setShareText] = useState('');
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const text = [
       `【今日运势 · ${fortune.no}】${fortune.title}（${fortune.level}）`,
       `${fortune.poem.join('，')}。`,
       `「${fortune.motto}」`,
       '—— 每日一签 · 诚心求签 · 顺势而为',
+      ...(import.meta.env.MODE === 'xhs' ? [] : ['来抽一签：https://juneinjune5989-ctrl.github.io/yi-qian/']),
     ].join('\n');
-    setShareText(text);
-    setShareTip('签文已展开，可手动摘录分享');
+
+    if (import.meta.env.MODE === 'xhs') {
+      setShareText(text);
+      setShareTip('签文已展开，可手动摘录分享');
+    } else {
+      const copied = await copyText(text);
+      setShareTip(copied ? '签文已复制，可粘贴分享给有缘人' : '复制未成功，请手动选择签文');
+    }
     window.setTimeout(() => setShareTip(''), 2800);
   };
 
